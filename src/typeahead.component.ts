@@ -73,14 +73,17 @@ const sanitizeString = (text: string) =>
       {{ complex ? value[nameField] : value }}
     </ng-template>
 
-    <span [ngClass]="settings.tagClass" class="type-ahead-badge" *ngFor="let value of values; let i = index">
+    <span [ngClass]="settings.tagClass" *ngFor="let value of values; let i = index">
       <ng-template [ngTemplateOutlet]="itemTemplate || taItemTemplate"
                  [ngTemplateOutletContext]="{ item: value, index: i, complex: complex, nameField: nameField }"></ng-template>
       <span *ngIf="!isDisabled" aria-hidden="true" (click)="removeValue(value)"
             [ngClass]="settings.tagRemoveIconClass">×</span>
     </span>
-    <input *ngIf="!isDisabled || !multi || !values.length" 
+    <input 
+           [class]="inputClass" *ngIf="!isDisabled || !multi || !values.length" 
            [disabled]="isDisabled || null"
+           [required]="isRequired || null"
+           [name]="formName"
            placeholder="{{(isDisabled || values.length) ? '' : placeholder}}"
            type="text" autocomplete="off"
            (keyup)="handleInput($event)"
@@ -91,18 +94,20 @@ const sanitizeString = (text: string) =>
     <i *ngIf="!isDisabled" (click)="toggleDropdown()" tabindex="-1"
        [ngClass]="settings.dropdownToggleClass"></i>
     <div role="menu" [attr.class]="dropDownClass" *ngIf="matches.length || !custom">
-      <button *ngFor="let match of matches; let i = index" type="button" role="menuitem" tabindex="-1"
-              [ngClass]="settings.dropdownMenuItemClass"
+      <div *ngFor="let match of matches; let i = index" role="menuitem" tabindex="-1"
+              (click)="setValue(match)"
               (mouseup)="handleButton($event, match)"
               (keydown)="handleButton($event, match)"
-              (keyup)="handleButton($event, match)">
+              (keyup)="handleButton($event, match)"
+              [ngClass]="settings.dropdownMenuItemClass"
+            >
         <ng-template [ngTemplateOutlet]="itemTemplate || taItemTemplate"
                      [ngTemplateOutletContext]="{ item: match, index: i, complex: complex, nameField: nameField }"></ng-template>
-      </button>
-      <button role="menuitem" *ngIf="!matches.length && !custom" tabindex="-1" aria-disabled="true" disabled="disabled"
+      </div>
+      <div role="menuitem" *ngIf="!matches.length && !custom" tabindex="-1" aria-disabled="true" disabled="disabled"
            [ngClass]="settings.dropdownMenuItemClass">
         {{ settings.noMatchesText }}
-      </button>
+      </div>
     </div>
   `,
   providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => TypeaheadComponent), multi: true }]
@@ -110,6 +115,8 @@ const sanitizeString = (text: string) =>
 export class TypeaheadComponent implements ControlValueAccessor, AfterViewInit, OnDestroy, OnInit, OnChanges {
   /** suggestions list - array of strings, objects or Observable */
   @Input() suggestions: TypeaheadSuggestions = [];
+  @Input() formName = '';
+  @Input() isRequired = false;
   /**
    * template for items in drop down
    * properties exposed are item and index
@@ -127,6 +134,8 @@ export class TypeaheadComponent implements ControlValueAccessor, AfterViewInit, 
   @Input() complex = false;
   /** use complex suggestions and results */
   @Input() placeholder = '';
+
+  @Input() inputClass = '';
 
   /** Value of form control */
   @Input()
@@ -329,6 +338,7 @@ export class TypeaheadComponent implements ControlValueAccessor, AfterViewInit, 
    * Value setter
    * @param value
    */
+  @Input()
   set value(value: any) {
     if (value === this._value) {
       return;
@@ -360,8 +370,8 @@ export class TypeaheadComponent implements ControlValueAccessor, AfterViewInit, 
     }
     // if arrow down, select first item in the menu
     if (event.type === KEY_DOWN && (event as KeyboardEvent).key === ARROW_DOWN && this.matches.length > 0) {
-      const button = this.elementRef.nativeElement.querySelector('button[role="menuitem"]:first-child');
-      button.focus();
+      const option = this.elementRef.nativeElement.querySelector('div[role="menuitem"]:first-child');
+      option.focus();
       return;
     }
 
@@ -401,8 +411,7 @@ export class TypeaheadComponent implements ControlValueAccessor, AfterViewInit, 
    * @param value
    */
   handleButton(event: KeyboardEvent | MouseEvent, value: any) {
-    const target = (event.target as HTMLButtonElement);
-
+    const target = (event.target as HTMLDivElement);
     if (event instanceof MouseEvent) {
       this.setValue(value, true);
       this._inputChangeEvent.next(this._input.value);
@@ -451,6 +460,7 @@ export class TypeaheadComponent implements ControlValueAccessor, AfterViewInit, 
     if (collapseMenu) {
       this.toggleDropdown(false);
     }
+    console.log(value);
     // refocus the input
     this._input.focus();
   }
