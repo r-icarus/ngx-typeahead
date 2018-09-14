@@ -84,6 +84,7 @@ const sanitizeString = (text: string) =>
            [disabled]="isDisabled || null"
            [required]="isRequired || null"
            [name]="formName"
+           [(ngModel)]="value"
            placeholder="{{(isDisabled || values.length) ? '' : placeholder}}"
            type="text" autocomplete="off"
            (keyup)="handleInput($event)"
@@ -94,9 +95,8 @@ const sanitizeString = (text: string) =>
     <i *ngIf="!isDisabled" (click)="toggleDropdown()" tabindex="-1"
        [ngClass]="settings.dropdownToggleClass"></i>
     <div role="menu" [attr.class]="dropDownClass" *ngIf="matches.length || !custom">
-      <div *ngFor="let match of matches; let i = index" role="menuitem" tabindex="-1"
-              (click)="setValue(match)"
-              (mouseup)="handleButton($event, match)"
+      <div *ngFor="let match of matches; let i = index" role="menuitem" tabindex="-1" style="position:relative;min-width:450px;"
+              (mousedown)="matchPicked(match)"
               (keydown)="handleButton($event, match)"
               (keyup)="handleButton($event, match)"
               [ngClass]="settings.dropdownMenuItemClass"
@@ -152,7 +152,7 @@ export class TypeaheadComponent implements ControlValueAccessor, AfterViewInit, 
   @HostBinding('attr.disabled') get disabledBinding() { return this.isDisabled || null; }
 
   /** Output value change */
-  @Output() valueChange = new EventEmitter();
+  @Output() valueChange: EventEmitter<any> = new EventEmitter<any>();
 
   // ui state
   isDisabled = false;
@@ -405,6 +405,12 @@ export class TypeaheadComponent implements ControlValueAccessor, AfterViewInit, 
     this._inputChangeEvent.next(target.value);
   }
 
+  matchPicked(value: any) {
+    this.setValue(value);
+    this.valueChange.emit(value);
+    this.toggleDropdown(false);
+  }
+
   /**
    * Move through collection on dropdown
    * @param event
@@ -413,8 +419,10 @@ export class TypeaheadComponent implements ControlValueAccessor, AfterViewInit, 
   handleButton(event: KeyboardEvent | MouseEvent, value: any) {
     const target = (event.target as HTMLDivElement);
     if (event instanceof MouseEvent) {
-      this.setValue(value, true);
+      this.setValue(value);
+      console.log(value);
       this._inputChangeEvent.next(this._input.value);
+      this.toggleDropdown(false);
       return;
     }
 
@@ -460,7 +468,6 @@ export class TypeaheadComponent implements ControlValueAccessor, AfterViewInit, 
     if (collapseMenu) {
       this.toggleDropdown(false);
     }
-    console.log(value);
     // refocus the input
     this._input.focus();
   }
