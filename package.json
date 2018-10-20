@@ -1,6 +1,6 @@
 {
   "name": "twt-ngx-type-ahead",
-  "version": "1.0.18",
+  "version": "1.0.23",
   "description": "Typeahead multi-select dropdown component for angular",
   "scripts": {
     "test": "karma start",

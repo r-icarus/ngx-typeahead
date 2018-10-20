@@ -54,12 +54,6 @@ const sanitizeString = (text: string) =>
       white-space: nowrap;
       cursor: pointer;
     }
-    :host input {
-      border: none;
-      outline: 0;
-      line-height: 1;
-      flex: 1;
-    }
     :host [role="menuitem"] {
       cursor: pointer;
     }
@@ -174,7 +168,7 @@ export class TypeaheadComponent implements ControlValueAccessor, AfterViewInit, 
    * @private
    */
   private _settings: TypeaheadSettings = {
-    suggestionsLimit: 10,
+    suggestionsLimit: 0,
     typeDelay: 50,
     noMatchesText: 'No matches found',
 
@@ -420,7 +414,6 @@ export class TypeaheadComponent implements ControlValueAccessor, AfterViewInit, 
     const target = (event.target as HTMLDivElement);
     if (event instanceof MouseEvent) {
       this.setValue(value);
-      console.log(value);
       this._inputChangeEvent.next(this._input.value);
       this.toggleDropdown(false);
       return;
@@ -430,6 +423,7 @@ export class TypeaheadComponent implements ControlValueAccessor, AfterViewInit, 
       if (event.key === ENTER) {  // enter
         this.setValue(value);
         this._inputChangeEvent.next(this._input.value);
+        this.valueChange.emit(value);
         this.toggleDropdown(false);
       }
       if (event.key === ESCAPE) { // escape key
