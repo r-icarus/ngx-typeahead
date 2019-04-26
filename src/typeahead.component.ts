@@ -73,8 +73,8 @@ const sanitizeString = (text: string) =>
       <span *ngIf="!isDisabled" aria-hidden="true" (click)="removeValue(value)"
             [ngClass]="settings.tagRemoveIconClass">×</span>
     </span>
-    <input 
-           [class]="inputClass" *ngIf="!isDisabled || !multi || !values.length" 
+    <input
+           [class]="inputClass" *ngIf="!isDisabled || !multi || !values.length"
            [disabled]="isDisabled || null"
            [required]="isRequired || null"
            [name]="formName"
@@ -335,6 +335,9 @@ export class TypeaheadComponent implements ControlValueAccessor, AfterViewInit, 
   @Input()
   set value(value: any) {
     if (value === this._value) {
+      return;
+    }
+    if (this.multi && this.complex && typeof value === 'string') {
       return;
     }
     this.writeValue(value);
