@@ -1,6 +1,6 @@
 {
-  "name": "twt-ngx-type-ahead",
-  "version": "1.0.23",
+  "name": "tw-ngx-type-ahead",
+  "version": "1.0.24",
   "description": "Typeahead multi-select dropdown component for angular",
   "scripts": {
     "test": "karma start",
@@ -13,7 +13,7 @@
   "private": false,
   "repository": {
     "type": "git",
-    "url": "https://github.com/avh2ag/ngx-typeahead.git"
+    "url": "https://github.com/r-icarus/ngx-typeahead.git"
   },
   "keywords": [
     "Angular",
